@@ -81,7 +81,7 @@ This node pack provides tools for quantizing models directly within ComfyUI. It 
 * PyTorch (usually included with ComfyUI)
 * `safetensors`
 * `tqdm`
-* CUDA-enabled GPU is required for the `Quantize Model to FP8 Format` node.
+* CUDA-enabled GPU is required for the `Quantize Model scaled` node.
 
 ## License
 
