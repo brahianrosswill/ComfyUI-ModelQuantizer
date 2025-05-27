@@ -200,14 +200,6 @@ This node pack provides powerful quantization tools directly within ComfyUI, inc
 - **For speed**: Use `per_tensor` + reduce `calibration_samples`
 - **Memory issues**: Process models one at a time
 
-## Workflow Examples
-
-Pre-made workflow JSON files are available in the `examples/` folder:
-- `workflow_controlnet_fp8_quantization.json` - Basic ControlNet quantization
-- `workflow_advanced_controlnet_quantization.json` - Advanced with verification
-- `workflow_integrated_quantization.json` - Integration with existing nodes
-- `workflow_batch_controlnet_quantization.json` - Batch processing multiple models
-
 ## License
 
 MIT 
