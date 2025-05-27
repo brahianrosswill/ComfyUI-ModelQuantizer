@@ -1,15 +1,20 @@
-# ComfyUI Quantization Node Pack
+# ComfyUI Model Quantizer
 
-A custom node pack for ComfyUI that provides tools for quantizing model weights to lower precision formats like FP16, BF16, or true FP8 types.
+A comprehensive custom node pack for ComfyUI that provides advanced tools for quantizing model weights to lower precision formats like FP16, BF16, and true FP8 types, with specialized support for ControlNet models.
 
 ## Overview
 
-This node pack provides tools for quantizing models directly within ComfyUI. It includes:
+This node pack provides powerful quantization tools directly within ComfyUI, including:
 
+### Standard Quantization Nodes
 1.  **Model To State Dict**: Extracts the state dictionary from a model object and attempts to normalize keys.
 2.  **Quantize Model to FP8 Format**: Converts model weights directly to `float8_e4m3fn` or `float8_e5m2` format (requires CUDA).
 3.  **Quantize Model Scaled**: Applies simulated FP8 scaling (per-tensor or per-channel) and then casts the model to `float16`, `bfloat16`, or keeps the original format.
 4.  **Save As SafeTensor**: Saves the processed state dictionary to a `.safetensors` file at a specified path.
+
+### NEW: ControlNet FP8 Quantization Nodes
+5.  **ControlNet FP8 Quantizer**: Advanced FP8 quantization specifically designed for ControlNet models with precision-aware quantization, tensor calibration, and ComfyUI folder integration.
+6.  **ControlNet Metadata Viewer**: Analyzes and displays ControlNet model metadata, tensor information, and structure for debugging and optimization.
 
 ## Installation
 
@@ -17,15 +22,26 @@ This node pack provides tools for quantizing models directly within ComfyUI. It 
     * Example using git:
         ```bash
         cd ComfyUI/custom_nodes
-        git clone [https://github.com/YourUsername/YourRepoName.git](https://github.com/YourUsername/YourRepoName.git) ComfyUI_QuantNodes 
+        git clone [https://github.com/YourUsername/YourRepoName.git](https://github.com/YourUsername/YourRepoName.git) ComfyUI-ModelQuantizer
         # Replace with your actual repo URL and desired folder name
         ```
-    * Alternatively, download the ZIP and extract it into `ComfyUI/custom_nodes/ComfyUI_QuantNodes`.
-2.  Install dependencies (optional, check if already installed):
+    * Alternatively, download the ZIP and extract it into `ComfyUI/custom_nodes/ComfyUI-ModelQuantizer`.
+
+2.  Install dependencies:
     ```bash
-    pip install -r ComfyUI/custom_nodes/ComfyUI_QuantNodes/requirements.txt
+    cd ComfyUI/custom_nodes/ComfyUI-ModelQuantizer
+    pip install -r requirements.txt
     ```
-3.  Restart ComfyUI.
+
+3.  **For ControlNet quantization**, ensure your ControlNet models are in the correct folder:
+    ```
+    ComfyUI/models/controlnet/
+    ├── control_v11p_sd15_canny.safetensors
+    ├── control_v11p_sd15_openpose.safetensors
+    └── ...
+    ```
+
+4.  Restart ComfyUI.
 
 ## Usage
 
@@ -65,8 +81,35 @@ This node pack provides tools for quantizing models directly within ComfyUI. It 
     * `absolute_save_path`: The full path (including filename) where the model will be saved.
 * **Outputs**: None (Output node).
 
-## Example Workflow
+### ControlNet FP8 Quantizer
+* **Category:** `Model Quantization/ControlNet`
+* **Function:** Advanced FP8 quantization specifically designed for ControlNet models with precision-aware quantization and tensor calibration.
+* **Inputs**:
+    * `controlnet_model`: Dropdown selection of ControlNet models from `models/controlnet/` folder
+    * `fp8_format`: FP8 format (`float8_e4m3fn` recommended, or `float8_e5m2`)
+    * `quantization_strategy`: `per_tensor` (faster) or `per_channel` (better quality)
+    * `activation_clipping`: Enable percentile-based outlier handling (recommended)
+    * `custom_output_name`: Optional custom filename for output
+    * `calibration_samples`: Number of samples for tensor calibration (10-1000, default: 100)
+    * `preserve_metadata`: Preserve original metadata in output file
+* **Outputs**:
+    * `status`: Operation status and result message
+    * `metadata_info`: JSON-formatted metadata information
+    * `quantization_stats`: Detailed compression statistics and ratios
 
+### ControlNet Metadata Viewer
+* **Category:** `Model Quantization/ControlNet`
+* **Function:** Analyzes and displays ControlNet model metadata, tensor information, and structure.
+* **Inputs**:
+    * `controlnet_model`: Dropdown selection of ControlNet models from `models/controlnet/` folder
+* **Outputs**:
+    * `metadata`: JSON-formatted original metadata
+    * `tensor_info`: Detailed tensor information including shapes, dtypes, and sizes
+    * `model_analysis`: Model structure analysis including layer types and statistics
+
+## Example Workflows
+
+### Standard Model Quantization
 1.  Load a model using a standard loader (e.g., `Load Checkpoint`).
 2.  Connect the `MODEL` output to the `Model To State Dict` node.
 3.  Connect the `model_state_dict` output from `Model To State Dict` to `Quantize Model Scaled`.
@@ -76,12 +119,94 @@ This node pack provides tools for quantizing models directly within ComfyUI. It 
 7.  Queue the prompt.
 8.  Restart ComfyUI or refresh loaders to find the saved model.
 
+### ControlNet FP8 Quantization
+1.  Add `ControlNet FP8 Quantizer` node to your workflow.
+2.  Select your ControlNet model from the dropdown (automatically populated from `models/controlnet/`).
+3.  Configure settings:
+    * **FP8 Format**: `float8_e4m3fn` (recommended for most cases)
+    * **Strategy**: `per_channel` (better quality) or `per_tensor` (faster)
+    * **Activation Clipping**: `True` (recommended for better quality)
+4.  Execute the workflow - quantized model automatically saved to `models/controlnet/quantized/`.
+5.  Use `ControlNet Metadata Viewer` to analyze original vs quantized models.
+
+### Batch ControlNet Processing
+1.  Add multiple `ControlNet FP8 Quantizer` nodes.
+2.  Select different ControlNet models in each node.
+3.  Use consistent settings across all nodes.
+4.  Execute to process multiple models simultaneously.
+
+## Features
+
+### Advanced ControlNet Quantization
+- **Precision-aware quantization** with tensor calibration and percentile-based scaling
+- **Two FP8 formats**: `float8_e4m3fn` (recommended) and `float8_e5m2`
+- **Quantization strategies**: per-tensor (faster) and per-channel (better quality)
+- **Automatic ComfyUI integration** with dropdown model selection
+- **Smart output management** - quantized models saved to `models/controlnet/quantized/`
+- **Comprehensive analysis** with metadata viewer and detailed statistics
+- **Fallback logic** for compatibility across different PyTorch versions
+
+### Technical Capabilities
+- **~50% size reduction** with maintained quality
+- **Advanced tensor calibration** using statistical analysis
+- **Activation clipping** with outlier handling
+- **Metadata preservation** with quantization information
+- **Error handling** with graceful fallbacks
+- **Progress tracking** and detailed logging
+
+### ComfyUI Integration
+- **Automatic model detection** from `models/controlnet/` folder
+- **Dropdown selection** - no manual path entry needed
+- **Auto-generated filenames** with format and strategy information
+- **Organized output** in dedicated quantized subfolder
+- **Seamless workflow integration** with existing ControlNet nodes
+
 ## Requirements
 
-* PyTorch (usually included with ComfyUI)
-* `safetensors`
-* `tqdm`
-* CUDA-enabled GPU is required for the `Quantize Model scaled` node.
+### Core Dependencies
+* PyTorch 2.0+ (for FP8 support, usually included with ComfyUI)
+* `safetensors` >= 0.3.1
+* `tqdm` >= 4.65.0
+
+### Additional Dependencies (for ControlNet nodes)
+* `tensorflow` >= 2.13.0 (optional, for advanced optimization)
+* `tensorflow-model-optimization` >= 0.7.0 (optional)
+
+### Hardware
+* CUDA-enabled GPU recommended for FP8 operations
+* CPU fallback available for compatibility
+
+## Troubleshooting
+
+### ControlNet Nodes Not Appearing
+1. Ensure all dependencies are installed: `pip install -r requirements.txt`
+2. Check that ControlNet models are in `ComfyUI/models/controlnet/` folder
+3. Restart ComfyUI completely
+4. Check console for import errors
+
+### "No models found" in Dropdown
+1. Place ControlNet models in `ComfyUI/models/controlnet/` folder
+2. Supported formats: `.safetensors`, `.pth`
+3. Check file permissions
+4. Use manual path input as fallback if needed
+
+### Quantization Errors
+- **"quantile() input tensor must be either float or double dtype"**: Fixed in latest version
+- **CUDA out of memory**: Use CPU processing or reduce batch size
+- **FP8 not supported**: Upgrade PyTorch to 2.0+ or use CPU fallback
+
+### Performance Tips
+- **For best quality**: Use `per_channel` + `activation_clipping` + `float8_e4m3fn`
+- **For speed**: Use `per_tensor` + reduce `calibration_samples`
+- **Memory issues**: Process models one at a time
+
+## Workflow Examples
+
+Pre-made workflow JSON files are available in the `examples/` folder:
+- `workflow_controlnet_fp8_quantization.json` - Basic ControlNet quantization
+- `workflow_advanced_controlnet_quantization.json` - Advanced with verification
+- `workflow_integrated_quantization.json` - Integration with existing nodes
+- `workflow_batch_controlnet_quantization.json` - Batch processing multiple models
 
 ## License
 
