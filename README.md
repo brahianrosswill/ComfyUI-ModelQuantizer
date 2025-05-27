@@ -210,4 +210,4 @@ Pre-made workflow JSON files are available in the `examples/` folder:
 
 ## License
 
-MIT (Or your chosen license)
+MIT 
