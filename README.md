@@ -16,6 +16,9 @@ This node pack provides powerful quantization tools directly within ComfyUI, inc
 5.  **ControlNet FP8 Quantizer**: Advanced FP8 quantization specifically designed for ControlNet models with precision-aware quantization, tensor calibration, and ComfyUI folder integration.
 6.  **ControlNet Metadata Viewer**: Analyzes and displays ControlNet model metadata, tensor information, and structure for debugging and optimization.
 
+### NEW: GGUF Model Quantization
+7.  **GGUF Quantizer 👾**: Advanced GGUF quantization wrapper around City96's GGUF tools, optimized for diffusion models including WAN, HunyuanVid, and FLUX. Supports multiple quantization levels (F16, Q4_K_M, Q5_0, Q8_0, etc.) with automatic architecture detection and 5D tensor handling.
+
 ## Installation
 
 1.  Clone or download this repository into your ComfyUI's `custom_nodes` directory.
@@ -107,6 +110,27 @@ This node pack provides powerful quantization tools directly within ComfyUI, inc
     * `tensor_info`: Detailed tensor information including shapes, dtypes, and sizes
     * `model_analysis`: Model structure analysis including layer types and statistics
 
+### GGUF Quantizer 👾
+* **Category:** `Model Quantization/GGUF`
+* **Function:** Advanced GGUF quantization wrapper around City96's GGUF tools for diffusion models. Supports automatic architecture detection and multiple quantization formats.
+* **Inputs**:
+    * `model`: Input MODEL object (UNET/diffusion model)
+    * `quantization_type`: Target quantization format (`F16`, `Q4_K_M`, `Q5_0`, `Q8_0`, `ALL`, etc.)
+    * `output_path_template`: Output path template (relative or absolute)
+    * `is_absolute_path`: Toggle between relative (ComfyUI output) and absolute path modes
+    * `setup_environment`: Run llama.cpp setup if needed
+    * `verbose_logging`: Enable detailed debug logging
+* **Outputs**:
+    * `status_message`: Operation status and detailed progress information
+    * `output_gguf_path_or_dir`: Path to generated GGUF file(s)
+
+**Supported Models:**
+- ✅ **WAN** (Weights Are Not) - Video generation models
+- ✅ **HunyuanVid** - Hunyuan video diffusion models
+- ✅ **FLUX** - FLUX diffusion models with proper tensor handling
+- 🚧 **LTX** - Coming soon
+- 🚧 **HiDream** - Coming soon
+
 ## Example Workflows
 
 ### Standard Model Quantization
@@ -134,6 +158,19 @@ This node pack provides powerful quantization tools directly within ComfyUI, inc
 2.  Select different ControlNet models in each node.
 3.  Use consistent settings across all nodes.
 4.  Execute to process multiple models simultaneously.
+
+### GGUF Model Quantization
+1.  Load your diffusion model using standard ComfyUI loaders.
+2.  Add `GGUF Quantizer 👾` node to your workflow.
+3.  Connect the `MODEL` output to the GGUF quantizer input.
+4.  Configure settings:
+    * **Quantization Type**: `Q4_K_M` (recommended balance), `Q8_0` (higher quality), or `ALL` (generate multiple formats)
+    * **Output Path**: Specify where to save (e.g., `models/unet/quantized/`)
+    * **Verbose Logging**: Enable for detailed progress information
+5.  Execute workflow - quantized GGUF files will be saved to specified location.
+6.  Use quantized models with ComfyUI-GGUF loader nodes.
+
+**Note**: GGUF quantization requires significant RAM (96GB+) and processing time varies by model size.
 
 ## Features
 
@@ -176,6 +213,12 @@ This node pack provides powerful quantization tools directly within ComfyUI, inc
 * CUDA-enabled GPU recommended for FP8 operations
 * CPU fallback available for compatibility
 
+### GGUF Quantization Requirements
+* **Minimum 96GB RAM** - Required for processing large diffusion models
+* **Decent GPU** - For model loading and processing (VRAM requirements vary by model size)
+* **Storage Space** - GGUF files can be large during processing (temporary files cleaned up automatically)
+* **Python 3.8+** with PyTorch 2.0+
+
 ## Troubleshooting
 
 ### ControlNet Nodes Not Appearing
@@ -200,6 +243,55 @@ This node pack provides powerful quantization tools directly within ComfyUI, inc
 - **For speed**: Use `per_tensor` + reduce `calibration_samples`
 - **Memory issues**: Process models one at a time
 
+## Workflow Examples
+
+Pre-made workflow JSON files are available in the `examples/` folder:
+- `workflow_controlnet_fp8_quantization.json` - Basic ControlNet quantization
+- `workflow_advanced_controlnet_quantization.json` - Advanced with verification
+- `workflow_integrated_quantization.json` - Integration with existing nodes
+- `workflow_batch_controlnet_quantization.json` - Batch processing multiple models
+
+## Development Roadmap & TODO
+
+### Completed Features ✅
+#### Standard Quantization
+- [x] **FP16 Quantization** - Standard half-precision quantization
+- [x] **BF16 Quantization** - Brain floating-point 16-bit format
+- [x] **FP8 Direct Quantization** - True FP8 formats (float8_e4m3fn, float8_e5m2)
+- [x] **FP8 Scaled Quantization** - Simulated FP8 with scaling strategies
+- [x] **Per-Tensor & Per-Channel Scaling** - Multiple quantization strategies
+- [x] **State Dict Extraction** - Model to state dictionary conversion
+- [x] **SafeTensors Export** - Reliable model saving format
+
+#### ControlNet FP8 Integration
+- [x] **ControlNet FP8 Quantizer** - Specialized FP8 quantization for ControlNet models
+- [x] **Precision-Aware Quantization** - Advanced tensor calibration and scaling
+
+#### GGUF Quantization
+- [x] **WAN Model Support** - Complete with 5D tensor handling
+- [x] **HunyuanVid Model Support** - Architecture detection and conversion
+- [x] **FLUX Model Support** - Proper tensor prefix handling and quantization
+- [x] **Automatic Architecture Detection** - Smart model type detection
+- [x] **5D Tensor Handling** - Special handling for complex tensor shapes
+- [x] **Path Management** - Robust absolute/relative path handling
+- [x] **Multiple GGUF Formats** - F16, Q4_K_M, Q5_0, Q8_0, and more
+
+### Upcoming Features 🚧
+- [ ] **LTX Model Support** - Integration planned for next release
+- [ ] **HiDream Model Support** - Integration planned for next release
+- [ ] **DFloat11 Quantization** - Ultra-low precision format coming soon
+- [ ] **Memory Optimization** - Reduce RAM requirements where possible
+- [ ] **Batch Processing** - Support for multiple models in single operation
+
+### Known Issues
+- [ ] **High RAM Requirements** - Currently requires 96GB+ RAM for large models
+- [ ] **Processing Time** - Large models can take significant time to process
+- [ ] **Temporary File Cleanup** - Ensure all temporary files are properly cleaned up
+
+## Acknowledgments
+
+This project wraps and extends [City96's GGUF tools](https://github.com/city96/ComfyUI-GGUF) for diffusion model quantization. Special thanks to the City96 team for this excellent GGUF implementation and the broader ComfyUI community for their contributions.
+
 ## License
 
-MIT 
+MIT (Or your chosen license)
