@@ -1,9 +1,9 @@
 # ComfyUI Model Quantizer
 
+A comprehensive custom node pack for ComfyUI that provides advanced tools for quantizing model weights to lower precision formats like FP16, BF16, and true FP8 types, with specialized support for ControlNet models.
+
 ![image](https://github.com/user-attachments/assets/e050487c-c316-47f7-9dac-d56977d20d34)
 
-
-A comprehensive custom node pack for ComfyUI that provides advanced tools for quantizing model weights to lower precision formats like FP16, BF16, and true FP8 types, with specialized support for ControlNet models.
 
 ## Overview
 
