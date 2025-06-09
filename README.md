@@ -21,7 +21,7 @@ This node pack provides powerful quantization tools directly within ComfyUI, inc
 6.  **ControlNet Metadata Viewer**: Analyzes and displays ControlNet model metadata, tensor information, and structure for debugging and optimization.
 
 ### NEW: GGUF Model Quantization
-7.  **GGUF Quantizer 👾**: Advanced GGUF quantization wrapper around @city96 GGUF tools, optimized for diffusion models including WAN, HunyuanVid, and FLUX. Supports multiple quantization levels (F16, Q4_K_M, Q5_0, Q8_0, etc.) with automatic architecture detection and 5D tensor handling.
+7.  **GGUF Quantizer 👾**: Advanced GGUF quantization wrapper around [City96]([url](https://github.com/city96)) GGUF tools, optimized for diffusion models including WAN, HunyuanVid, and FLUX. Supports multiple quantization levels (F16, Q4_K_M, Q5_0, Q8_0, etc.) with automatic architecture detection and 5D tensor handling.
 
 ## Installation
 
